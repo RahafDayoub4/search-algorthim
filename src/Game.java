@@ -1,7 +1,9 @@
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Game {
     protected List<Player> players;
@@ -10,6 +12,7 @@ public class Game {
     private int cols;
     public Game parent;
     public int cost; 
+    boolean win = false;
     public Game() {}
 
     public Game(char[][] grid, List<Player> players, int rows, int cols) {
@@ -41,10 +44,12 @@ public class Game {
         state.rows = rows;
         state.grid = newGrid;
         state.players = newPlayers;
-
+        state.parent = (this);
         for (Player player : newPlayers) {
             int newX = player.getX();
             int newY = player.getY();
+            int xtar = player.getxTarget();
+            int ytar  = player.getyTarget();
             boolean canMove = true;
             while (canMove) {
                 int tempX = newX;
@@ -64,10 +69,13 @@ public class Game {
                         tempY++;
                         break;
                 }
-                if (isValidMove(tempX, tempY)) {
+                if (isValidMove(tempX, tempY,xtar,ytar)) {
                     newX = tempX;
                     newY = tempY; 
-                    parent = (this);
+                    if (newX == xtar && newY== ytar){
+                        canMove = false;
+                    }
+                    
                 } else {
                     canMove = false;
                 }
@@ -76,7 +84,21 @@ public class Game {
 
             player.setX(newX);
             player.setY(newY);
+           
+            if (check()) {
+                win = true;
+                canMove =false; 
+            
         }
+        }
+
+       
+        if (win) {
+            System.out.println("Player has won!");
+            return state; // Return the new state indicating a win
+        }
+        
+        
 
         return state;
     } 
@@ -88,41 +110,36 @@ public class Game {
         return this.parent;
     }
 
-    private boolean isValidMove(int x, int y) {
+    private boolean isValidMove(int x, int y,int xtar, int ytar) {
+        if (x < 0 || x >= grid.length || y < 0 || y >= grid[0].length) return false;
         
-        if (x < 0 || x >= grid.length || y < 0 || y >= grid[0].length) return false; 
-        if (grid[x][y] == '1') return false; // Wall or invalid cell
-        // Check if another player is already at the position
+        if (grid[x][y] == '1') return false; 
+       
         for (Player otherPlayer : players) {
-            if (otherPlayer.getX() == x && otherPlayer.getY() == y) return false; // Another player is at the position
+            if (otherPlayer.getX() == x && otherPlayer.getY() == y) return false; 
         }
-        for (Player player : players) {
-           
-            if (player.getX() == x && player.getY() == y && player.getX() == player.getxTarget() && player.getY() == player.getyTarget()) {
-                // Player has reached its target, call check()
-                System.out.println(x);
-                System.out.println(y);
-                playerReachedTarget(player);
-                playersToRemove.add(player);
-                return true; // Valid move
-            }
-        }
-        
-        playersToRemove.removeAll(players);
-        return true;
+     
+        return true; 
     }
     
     public List<Game> generatePossibleMoves() {
         List<Game> moves = new ArrayList<>();
+        if (players.isEmpty()){
+            System.out.println("no players");
+            return moves ;
+        }
+      else{
         for (String direction : Arrays.asList("UP", "DOWN", "LEFT", "RIGHT")) {
             Game possibleState = canMove(direction);
-            // Only add the state if the player actually moved
+           
             if (!isSameState(possibleState)) {
-                possibleState.cost +=1;
+                
                 moves.add(possibleState);
             }
         }
+       
         return moves;
+    }
     }
 
     private boolean isSameState(Game possibleState) {
@@ -135,43 +152,24 @@ public class Game {
         }
         return true; 
     }
-    ArrayList<Player> playersToRemove = new ArrayList<>();
-    public void check() {
-        System.out.println("Checking winning condition...");
-       // ArrayList<Player> playersToRemove = new ArrayList<>();
-        for (Player player : players) {
-            System.out.println("Checking player at (" + player.getX() + ", " + player.getY() + ")");
+    
+    public boolean check() {
+        // ArrayList<Player> playersToRemove = new ArrayList<>();
+        if (players.isEmpty()) {
+            handleWinCondition();
+            return true;
+        }
+        
+        List<Player> playersToRemove = new ArrayList<>();
+        for (Player player : new ArrayList<>(players)) {
             if (player.getX() == player.getxTarget() && player.getY() == player.getyTarget()) {
                 System.out.println("Player reached target!");
-                playerReachedTarget(player);
                 playersToRemove.add(player);
             }
         }
-        System.out.println("Removing " + playersToRemove.size() + " players");
+        
         players.removeAll(playersToRemove);
-    
-        boolean allReached = checkAllPlayersReachedTargets();
-        System.out.println("All players reached targets: " + allReached);
-    
-        if (allReached) {
-            handleWinCondition();
-        } else {
-            System.out.println("No win condition met.");
-        }
-    }
-
-    private void playerReachedTarget(Player player) {
-        int xtarget = player.getxTarget();
-        int ytarget = player.getyTarget();
-        grid[xtarget][ytarget] = '0'; // Mark target as reached
-    }
-
-    protected boolean checkAllPlayersReachedTargets() {
-        for (Player player : players) {
-            if (player.getX() != player.getxTarget() || player.getY() != player.getyTarget()) {
-                return false;
-            }
-        }
+        
         return players.isEmpty();
     }
 
@@ -196,30 +194,27 @@ public class Game {
     public void printGrid(char[][] grid, List<Player> players) {
         int rows = grid.length;
         int cols = grid[0].length;
-
-        // Print the grid with player positions
+    
+        // Print the grid without colors
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                boolean isPlayerCell = false;
-
-                for (Player player : players) {
-                    if (player.getX() == i && player.getY() == j) {
-                        isPlayerCell = true;
-                        break;
-                    }
-                }
-
-                String cellContent = String.valueOf(grid[i][j]);
-
-                if (isPlayerCell) {
-                    System.out.print("\u001B[41m" + cellContent + "\u001B[0m"); // Red background for players
+                if (hasPlayerAtPosition(players, i, j)) {
+                    System.out.print("\u001B[43m" + grid[i][j] + "\u001B[0m"); // Cyan background for players
                 } else {
-                    System.out.print(cellContent + " "); // Normal cell
+                    System.out.print(grid[i][j] + " ");
                 }
-
                 System.out.print("| ");
             }
             System.out.println();
         }
+    }
+    
+    private boolean hasPlayerAtPosition(List<Player> players, int x, int y) {
+        for (Player player : players) {
+            if (player.getX() == x && player.getY() == y) {
+                return true;
+            }
+        }
+        return false;
     }
 }

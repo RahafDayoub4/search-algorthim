@@ -47,11 +47,11 @@ public void setTarY(int y){
         return value;
     }
 
-    public boolean isFilled() {
-        return filled;
-    }
+    // public boolean isFilled() {
+    //     return filled;
+    // }
 
-    public void toggle() {
-        filled = !filled;
-    }
+    // public void toggle() {
+    //     filled = !filled;
+    // }
 }

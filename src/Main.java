@@ -6,23 +6,26 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         // Initialize the game
-        // char[][] grid = {
-        // {'1', '1', '1','1','1','1','1'},
-        // {'0', '0', '0','0','1','1','1'},
-        // {'0', '0', '0','0','0','1','1'},
-        // {'0', '0', '0','0','0','0','0'},
-        // };
-        char [][]grid ={
-      {'0','0','0'},
-      {'0','1','0'},{'0','0','0'},
+        char[][] grid = {
+        {'1', '1', '1','1','1','1','1'},
+        {'0', '0', '0','0','1','1','1'},
+        {'0', '0', '0','0','0','1','1'},
+        {'0', '0', '0','0','0','0','0'},
         };
+    //     char [][]grid ={
+    //   {'0','0','0'},
+    //   {'0','1','0'},{'0','0','0'},
+    //     };
         ArrayList<Player> players =new ArrayList<>(
            
         );
-        players.add( new Player(0,0,0,1)
-       );
-    //    players.add( new Player(3,5,1,2)
+        // players.add(new Player(0, 0, 1, 0));
+        // players.add( new Player(4,5,2,1)
     //    );
+       players.add( new Player(4,6,1,0)
+       );
+       players.add( new Player(4,5,2,2)
+       );
         Game game = new Game(grid, players, grid.length, grid[0].length);
 
         Scanner scanner = new Scanner(System.in);
@@ -31,13 +34,22 @@ public class Main {
         //     game.printGrid(game.grid, game.players);
     
         //     System.out.println("\nPossible States after move:");
+        //     System.out.println("somthing1");
+        //     try{
         // java.util.List <Game> possibleStates =   game.generatePossibleMoves();
-    
+        // System.out.println("somthing1");
+            
+            
         //     for (Game state : possibleStates) {
+        //         System.out.println("somthing1");
         //         game.printGrid(state.grid, state.players);
+        //         System.out.println("somthing1");
         //         System.out.println();
         //     }
-    
+        // }catch (Exception e) {
+        //     e.printStackTrace();
+        // }
+
         //     System.out.print("Enter direction (UP, DOWN, LEFT, RIGHT), or 'quit' to stop: ");
         //     String dir = scanner.nextLine().trim().toUpperCase();
     
@@ -47,19 +59,25 @@ public class Main {
     
         //     // Process the move
         //     Game newState = game.canMove(dir);
-    
-        //     // Update the game state
+        //     Game test = newState.parent; 
+        //     System.out.println("parent ");
+        //     test.printGrid(test.grid, test.players);
+        //     // // Update the game state
         //     game.grid = newState.grid;
         //     game.players = newState.players;
-        //     game.check();
+        //     // game.check();
+        //     if (game.players.isEmpty()){
+        //         break;
+        //     }
         // }
 
 
           Algorthims pathFinder = new Algorthims(game.grid);
 
         // Call BFS
+        
         ArrayList<Game> path = pathFinder.BFS(game);
-
+        
         if (path != null) {
             System.out.println("Found path to goal!");
             System.out.println("Path length: " + path.size());
