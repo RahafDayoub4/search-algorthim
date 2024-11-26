@@ -55,57 +55,7 @@ public class Algorthims {
     }
     
     
-    public ArrayList<Game> UCS(Game root) {
-        PriorityQueue<Game> pq = new PriorityQueue();
-        Set<Game> visitedGames = new HashSet<>();
-        Queue<Game> queue = new ArrayDeque<>();
-        
-        root.setParent(null);
-        pq.offer(root);
-        visitedGames.add(root);
-        
-         while (!pq.isEmpty()) {
-            Game currentGame = pq.poll();
-           List<Game> moves = currentGame.generatePossibleMoves();
-         
-            for (Game nextGame :moves) {
-            
-                if (nextGame == null) continue;
-                if (nextGame.cost > pq.size()  ){
-                          continue;
-                }
-                if (visitedGames.contains(nextGame)) {
-                    continue;
-                }
-
-                queue.add(nextGame);
-                visitedGames.add(nextGame);
     
-                // No need to set parent here, it was done in generatePossibleMoves
-    
-                if (checkGoal(nextGame)) {
-                    
-                    ArrayList<Game> path = new ArrayList<>();
-                    Game current = nextGame;
-                    while (current != null) {
-                        System.out.println("bfs");
-                        path.add(current);
-                        current = current.getParent();
-                    }
-                    Collections.reverse(path);
-    
-                    System.out.println("Goal reached!");
-                //    ArrayList <Game> foit = printPath(visitedGames, path);
-                //    for(Game game: foit){
-                //        game.printGrid(game.grid, game.players);
-                //    }
-                    return path;
-                }
-            }
-         }
-    
-        return null;
-    }
     public ArrayList<Game> DFS(Game root) {
         Set<Game> visitedGames = new HashSet<>();
         Stack<Game> stack = new Stack<>();
@@ -182,6 +132,50 @@ public class Algorthims {
         }
     
         return null;
+    }
+    public ArrayList<Game> UCS(Game root) {
+        PriorityQueue<Game> pq = new PriorityQueue<>((a, b) -> Double.compare(a.cost, b.cost));
+        Map<Game, Game> visitedParents = new HashMap<>();
+        
+        
+        root.cost = 0;
+        pq.offer(root);
+
+        while (!pq.isEmpty()) {
+            Game currentNode = pq.poll();
+            
+          
+            if (checkGoal(currentNode)) {
+                return reconstructPath(visitedParents, root, currentNode);
+            }
+
+            List<Game> moves = currentNode.generatePossibleMoves();
+
+            for (Game nextState : moves) {
+                if (nextState == null) continue;
+
+                int totalCost = currentNode.cost + nextState.cost;
+                
+                if (!visitedParents.containsKey(nextState) || totalCost < nextState.cost) {
+                    nextState.cost = totalCost;
+                    visitedParents.put(nextState, currentNode);
+                    pq.offer(nextState);
+                }
+            }
+        }
+
+        return null; 
+    }
+
+    private ArrayList<Game> reconstructPath(Map<Game, Game> visitedParents, Game start, Game goal) {
+        ArrayList<Game> path = new ArrayList<>();
+        Game current = goal;
+        while (current != null) {
+            path.add(current);
+            current = visitedParents.get(current);
+        }
+        Collections.reverse(path);
+        return path;
     }
     
     private boolean checkGoal(Game game) {
