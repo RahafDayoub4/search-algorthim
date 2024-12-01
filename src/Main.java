@@ -76,7 +76,7 @@ public class Main {
 
         // Call BFS
         
-        ArrayList<Game> path = pathFinder.BFS(game);
+        ArrayList<Game> path = pathFinder.Hurristec(game);
         
         if (path != null) {
             System.out.println("Found path to goal!");

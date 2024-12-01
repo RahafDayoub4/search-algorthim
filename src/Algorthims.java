@@ -166,7 +166,41 @@ public class Algorthims {
 
         return null; 
     }
+    public ArrayList<Game> Hurristec(Game root) {
+        int value = calHerusitec(root);
+        PriorityQueue<Game> pq = new PriorityQueue<>((a, b) -> Double.compare(value, b.cost));
 
+        Map<Game, Game> visitedParents = new HashMap<>();
+        
+        
+        root.cost = 0;
+        pq.offer(root);
+
+        while (!pq.isEmpty()) {
+            Game currentNode = pq.poll();
+            
+          
+            if (checkGoal(currentNode)) {
+                return reconstructPath(visitedParents, root, currentNode);
+            }
+
+            List<Game> moves = currentNode.generatePossibleMoves();
+
+            for (Game nextState : moves) {
+                if (nextState == null) continue;
+
+                int totalCost = currentNode.cost + nextState.cost;
+                
+                if (!visitedParents.containsKey(nextState) || totalCost < nextState.cost) {
+                    nextState.cost = totalCost;
+                    visitedParents.put(nextState, currentNode);
+                    pq.offer(nextState);
+                }
+            }
+        }
+
+        return null; 
+    }
     private ArrayList<Game> reconstructPath(Map<Game, Game> visitedParents, Game start, Game goal) {
         ArrayList<Game> path = new ArrayList<>();
         Game current = goal;
@@ -198,5 +232,14 @@ public class Algorthims {
         }
         return path;
     }
-
+    public int calHerusitec(Game game  ){
+        List <Player> players = game.players;
+        int cnt = 0; 
+        
+        for (Player player : players ){
+            cnt += Math.abs(player.getX()-player.getxTarget() + player.getY()-player.getyTarget()) ;
+        }
+        return cnt; 
+    }
+    
 }
